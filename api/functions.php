@@ -78,10 +78,28 @@ function getValueOfCurrency($cur)
 
 function getCalculatedValueInEuros($cur, $amount)
 {
+    $sql = "SELECT * FROM currency WHERE abbr = :abbr";
+    $params = [ ':abbr' => strtoupper($cur) ];
 
+    if(dbConnect()) {
+        dbQuery($sql, $params);
+        $currency = dbGet();
+
+        $response_data = [
+            'abbr' => strtoupper($cur),
+            'amount' => $amount,
+            'value' => $currency['value'],
+            'euro_value' => sprintf("%6.2f",round($amount * $currency['value'], 2))
+            // 'euro_value' => round($amount * $currency['value'], 2)
+        ];
+
+        return $response_data;
+    }
+
+    errorResponse('Cannot connect to the database', 500);
 }
 
 function getCalculatedValue($cur, $amount, $tocur)
 {
-
+    
 }
