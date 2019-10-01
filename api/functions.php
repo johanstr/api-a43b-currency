@@ -89,7 +89,7 @@ function getCalculatedValueInEuros($cur, $amount)
             'abbr' => strtoupper($cur),
             'amount' => $amount,
             'value' => $currency['value'],
-            'euro_value' => sprintf("%6.2f",round($amount * $currency['value'], 2))
+            'euro_value' => sprintf("%.2f",round($amount * $currency['value'], 2))
             // 'euro_value' => round($amount * $currency['value'], 2)
         ];
 
@@ -101,5 +101,28 @@ function getCalculatedValueInEuros($cur, $amount)
 
 function getCalculatedValue($cur, $amount, $tocur)
 {
-    
+    $sql = "SELECT * FROM currency WHERE abbr = :cur OR abbr = :tocur";
+    $params = [
+        ':cur' => $cur,
+        ':tocur' => $tocur
+    ];
+
+    if(dbConnect()) {
+        dbQuery($sql, $params);
+        $raw_data = dbGetAll();
+
+        $data[$raw_data[0]['abbr']] = $raw_data[0]['value'];
+        $data[$raw_data[1]['abbr']] = $raw_data[1]['value'];
+
+        $value = ($amount / $data[$cur]) * $data[$tocur];
+
+        $response_data = [
+            'from' => $cur,
+            'amount' => $amount,
+            'to' => $tocur,
+            'value' => sprintf("%.2f", round($value, 2))
+        ];
+
+        return $response_data;
+    }
 }
